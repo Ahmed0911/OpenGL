@@ -1,5 +1,7 @@
 // http://openglbook.com/chapter-1-getting-started
 
+#define _CRT_NONSTDC_NO_WARNINGS
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,10 +14,14 @@ CurrentWidth = 800,
 CurrentHeight = 600,
 WindowHandle = 0;
 
+unsigned FrameCount = 0;
+
 void Initialize(int, char*[]);
 void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
 void RenderFunction(void);
+void TimerFunction(int);
+void IdleFunction(void);
 
 int main(int argc, char* argv[])
 {
@@ -29,6 +35,18 @@ int main(int argc, char* argv[])
 void Initialize(int argc, char* argv[])
 {
 	InitWindow(argc, argv);
+
+	GLenum GlewInitResult;
+	GlewInitResult = glewInit();
+	if (GLEW_OK != GlewInitResult) {
+		fprintf(
+			stderr,
+			"ERROR: %s\n",
+			glewGetErrorString(GlewInitResult)
+		);
+
+		exit(EXIT_FAILURE);
+	}
 
 	fprintf(
 		stdout,
@@ -68,6 +86,8 @@ void InitWindow(int argc, char* argv[])
 
 	glutReshapeFunc(ResizeFunction);
 	glutDisplayFunc(RenderFunction);
+	glutIdleFunc(IdleFunction);
+	glutTimerFunc(0, TimerFunction, 0);
 }
 
 void ResizeFunction(int Width, int Height)
@@ -79,8 +99,37 @@ void ResizeFunction(int Width, int Height)
 
 void RenderFunction(void)
 {
+	FrameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
+}
+
+void IdleFunction(void)
+{
+	glutPostRedisplay();
+}
+
+void TimerFunction(int Value)
+{
+	if (0 != Value) {
+		char* TempString = (char*)
+			malloc(512 + strlen(WINDOW_TITLE_PREFIX));
+
+		sprintf(
+			TempString,
+			"%s: %d Frames Per Second @ %d x %d",
+			WINDOW_TITLE_PREFIX,
+			FrameCount * 4,
+			CurrentWidth,
+			CurrentHeight
+		);
+
+		glutSetWindowTitle(TempString);
+		free(TempString);
+	}
+
+	FrameCount = 0;
+	glutTimerFunc(250, TimerFunction, 1);
 }
