@@ -32,8 +32,11 @@
 Debug
 Release
 ipch
+packages
+*.user
 *.suo
 *.sdf
 *.opensdf
 *.log
-*.VC.db
+*.db
+*.opendb
