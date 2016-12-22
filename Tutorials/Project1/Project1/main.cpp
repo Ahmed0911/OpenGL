@@ -1,88 +1,86 @@
-#include <gl/freeglut.h>
+// http://openglbook.com/chapter-1-getting-started
 
-void init();
-void display(void);
-void centerOnScreen();
-void drawObject();
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#define WINDOW_TITLE_PREFIX "Chapter 1"
 
-//  define the window position on screen
-int window_x;
-int window_y;
+int
+CurrentWidth = 800,
+CurrentHeight = 600,
+WindowHandle = 0;
 
-//  variables representing the window size
-int window_width = 480;
-int window_height = 480;
+void Initialize(int, char*[]);
+void InitWindow(int, char*[]);
+void ResizeFunction(int, int);
+void RenderFunction(void);
 
-//  variable representing the window title
-char *window_title = "Sample OpenGL FreeGlut App";
-
-//-------------------------------------------------------------------------
-//  Program Main method.
-//-------------------------------------------------------------------------
-void main(int argc, char **argv)
+int main(int argc, char* argv[])
 {
-	//  Connect to the windowing system + create a window
-	//  with the specified dimensions and position
-	//  + set the display mode + specify the window title.
-	glutInit(&argc, argv);
-	centerOnScreen();
-	glutInitWindowSize(window_width, window_height);
-	glutInitWindowPosition(window_x, window_y);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutCreateWindow(window_title);
+	Initialize(argc, argv);
 
-	//  Set OpenGL program initial state.
-	init();
-
-	// Set the callback functions
-	glutDisplayFunc(display);
-
-	//  Start GLUT event processing loop
 	glutMainLoop();
+
+	exit(EXIT_SUCCESS);
 }
 
-//-------------------------------------------------------------------------
-//  Set OpenGL program initial state.
-//-------------------------------------------------------------------------
-void init()
+void Initialize(int argc, char* argv[])
 {
-	//  Set the frame buffer clear color to black. 
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	InitWindow(argc, argv);
+
+	fprintf(
+		stdout,
+		"INFO: OpenGL Version: %s\n",
+		glGetString(GL_VERSION)
+	);
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-//-------------------------------------------------------------------------
-//  This function is passed to glutDisplayFunc in order to display 
-//  OpenGL contents on the window.
-//-------------------------------------------------------------------------
-void display(void)
+void InitWindow(int argc, char* argv[])
 {
-	//  Clear the window or more specifically the frame buffer...
-	//  This happens by replacing all the contents of the frame
-	//  buffer by the clear color (black in our case)
-	glClear(GL_COLOR_BUFFER_BIT);
+	glutInit(&argc, argv);
 
-	//  Draw object
-	drawObject();
+	glutInitContextVersion(4,0);
+	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
 
-	//  Swap contents of backward and forward frame buffers
+	glutSetOption(
+		GLUT_ACTION_ON_WINDOW_CLOSE,
+		GLUT_ACTION_GLUTMAINLOOP_RETURNS
+	);
+
+	glutInitWindowSize(CurrentWidth, CurrentHeight);
+
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+
+	WindowHandle = glutCreateWindow(WINDOW_TITLE_PREFIX);
+
+	if (WindowHandle < 1) {
+		fprintf(
+			stderr,
+			"ERROR: Could not create a new rendering window.\n"
+		);
+		exit(EXIT_FAILURE);
+	}
+
+	glutReshapeFunc(ResizeFunction);
+	glutDisplayFunc(RenderFunction);
+}
+
+void ResizeFunction(int Width, int Height)
+{
+	CurrentWidth = Width;
+	CurrentHeight = Height;
+	glViewport(0, 0, CurrentWidth, CurrentHeight);
+}
+
+void RenderFunction(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glutSwapBuffers();
-}
-
-//-------------------------------------------------------------------------
-//  Draws our object.
-//-------------------------------------------------------------------------
-void drawObject()
-{
-	//  Draw Icosahedron
-	glutWireIcosahedron();
-}
-
-//-------------------------------------------------------------------------
-//  This function sets the window x and y coordinates
-//  such that the window becomes centered
-//-------------------------------------------------------------------------
-void centerOnScreen()
-{
-	window_x = (glutGet(GLUT_SCREEN_WIDTH) - window_width) / 2;
-	window_y = (glutGet(GLUT_SCREEN_HEIGHT) - window_height) / 2;
+	glutPostRedisplay();
 }
