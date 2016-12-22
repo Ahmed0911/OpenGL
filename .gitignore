@@ -27,3 +27,13 @@
 *.exe
 *.out
 *.app
+
+# other VS Stuff
+Debug
+Release
+ipch
+*.suo
+*.sdf
+*.opensdf
+*.log
+*.VC.db
