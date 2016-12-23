@@ -153,17 +153,6 @@ void ResizeFunction(int Width, int Height)
 	glViewport(0, 0, CurrentWidth, CurrentHeight);
 }
 
-void RenderFunction(void)
-{
-	FrameCount++;
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-
-	glutSwapBuffers();
-	glutPostRedisplay();
-}
-
 void IdleFunction(void)
 {
 	glutPostRedisplay();
@@ -198,29 +187,45 @@ void Cleanup(void)
 	DestroyVBO();
 }
 
+void RenderFunction(void)
+{
+	FrameCount++;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for(int i=0; i!=100;i++)
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
 void CreateVBO(void)
 {
 	GLfloat Vertices[] = {
+		-0.8f,  0.8f, 0.0f, 1.0f,
+		0.8f,  0.8f, 0.0f, 1.0f,
 		-0.8f, -0.8f, 0.0f, 1.0f,
-		0.0f,  0.8f, 0.0f, 1.0f,
 		0.8f, -0.8f, 0.0f, 1.0f
 	};
 
 	GLfloat Colors[] = {
 		1.0f, 0.0f, 0.0f, 1.0f,
 		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f
+		0.0f, 0.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f
 	};
+
+
 
 	GLenum ErrorCheckValue = glGetError();
 
 	glGenVertexArrays(1, &VaoId);
 	glBindVertexArray(VaoId);
 
-	glGenBuffers(1, &VboId);
-	glBindBuffer(GL_ARRAY_BUFFER, VboId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glGenBuffers(1, &VboId); //kreiraj buffer
+	glBindBuffer(GL_ARRAY_BUFFER, VboId); // selektiraj buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW); // napuni buffer podacima
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0); // definicija layouta: index 0 (u shader programu), 4 x FLOAT, bez normalizacije
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &ColorBufferId);
