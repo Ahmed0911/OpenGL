@@ -13,7 +13,7 @@
 
 
 int
-CurrentWidth = 800,
+CurrentWidth = 600,
 CurrentHeight = 600,
 WindowHandle = 0;
 
@@ -21,11 +21,13 @@ unsigned FrameCount = 0;
 
 // Shader stuff
 GLuint
-	VertexShaderId,
-	FragmentShaderId,
-	ProgramId,
-	VaoId,
-	VboId;
+  VertexShaderId,
+  FragmentShaderId,
+  ProgramId,
+  VaoId,
+  BufferId,
+  IndexBufferId[2],
+  ActiveIndexBuffer = 0;
 
 typedef struct
 {
@@ -40,6 +42,7 @@ void ResizeFunction(int, int);
 void RenderFunction(void);
 void TimerFunction(int);
 void IdleFunction(void);
+void KeyboardFunction(unsigned char, int, int);
 
 void Cleanup(void);
 void CreateVBO(void);
@@ -151,6 +154,7 @@ void InitWindow(int argc, char* argv[])
 	glutDisplayFunc(RenderFunction);
 	glutCloseFunc(Cleanup);
 	glutIdleFunc(IdleFunction);
+	glutKeyboardFunc(KeyboardFunction);
 	glutTimerFunc(0, TimerFunction, 0);
 }
 
@@ -165,6 +169,8 @@ void IdleFunction(void)
 {
 	glutPostRedisplay();
 }
+
+
 
 void TimerFunction(int Value)
 {
@@ -200,8 +206,12 @@ void RenderFunction(void)
 	FrameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for(int i=0; i!=100;i++)
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	if (ActiveIndexBuffer == 0) {
+		glDrawElements(GL_TRIANGLES, 48, GL_UNSIGNED_INT, NULL);
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+	}
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -211,31 +221,94 @@ void CreateVBO(void)
 {
 	Vertex Vertices[] =
 	{
-		{ { -0.8f, 0.8f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
-		{ { 0.8f,  0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-		{ { -0.8f, -0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
-		{ { 0.8f, -0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } }
+		{ { 0.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f } },
+		// Top
+		{ { -0.2f, 0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.2f, 0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.0f, 0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 0.0f, 1.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Bottom
+		{ { -0.2f, -0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.2f, -0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.0f, -0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 0.0f, -1.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Left
+		{ { -0.8f, -0.2f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { -0.8f, 0.2f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { -0.8f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { -1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Right
+		{ { 0.8f, -0.2f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.8f, 0.2f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.8f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } }
 	};
 
+	GLuint Indices[] = {
+		// Top
+		0, 1, 3,
+		0, 3, 2,
+		3, 1, 4,
+		3, 4, 2,
+		// Bottom
+		0, 5, 7,
+		0, 7, 6,
+		7, 5, 8,
+		7, 8, 6,
+		// Left
+		0, 9, 11,
+		0, 11, 10,
+		11, 9, 12,
+		11, 12, 10,
+		// Right
+		0, 13, 15,
+		0, 15, 14,
+		15, 13, 16,
+		15, 16, 14
+	};
+
+	GLuint AlternateIndices[] = {
+		// Outer square border:
+		3, 4, 16,
+		3, 15, 16,
+		15, 16, 8,
+		15, 7, 8,
+		7, 8, 12,
+		7, 11, 12,
+		11, 12, 4,
+		11, 3, 4,
+
+		// Inner square
+		0, 11, 3,
+		0, 3, 15,
+		0, 15, 7,
+		0, 7, 11
+	};
 
 	GLenum ErrorCheckValue = glGetError();
 	const size_t BufferSize = sizeof(Vertices);
 	const size_t VertexSize = sizeof(Vertices[0]);
 	const size_t RgbOffset = sizeof(Vertices[0].XYZW);
-
-	glGenBuffers(1, &VboId);
-
-	glGenVertexArrays(1, &VaoId);
-	glBindVertexArray(VaoId);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VboId);
+	
+	// vertex buffer
+	glGenBuffers(1, &BufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, BufferId);
 	glBufferData(GL_ARRAY_BUFFER, BufferSize, Vertices, GL_STATIC_DRAW);
 
+	// vertex array definition
+	glGenVertexArrays(1, &VaoId);
+	glBindVertexArray(VaoId);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, VertexSize, 0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, VertexSize, (GLvoid*)RgbOffset);
-
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
+	// index buffer
+	glGenBuffers(2, IndexBufferId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(AlternateIndices), AlternateIndices, GL_STATIC_DRAW);
 
 	ErrorCheckValue = glGetError();
 	if (ErrorCheckValue != GL_NO_ERROR)
@@ -259,7 +332,10 @@ void DestroyVBO(void)
 	glDisableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDeleteBuffers(1, &VboId);
+	glDeleteBuffers(1, &BufferId);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glDeleteBuffers(2, IndexBufferId);
 
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &VaoId);
@@ -332,5 +408,21 @@ void DestroyShaders(void)
 		);
 
 		exit(-1);
+	}
+}
+
+void KeyboardFunction(unsigned char Key, int X, int Y)
+{
+	switch (Key)
+	{
+	case 'T':
+	case 't':
+	{
+		ActiveIndexBuffer = (ActiveIndexBuffer == 1 ? 0 : 1);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[ActiveIndexBuffer]);
+		break;
+	}
+	default:
+		break;
 	}
 }
