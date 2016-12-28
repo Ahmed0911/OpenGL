@@ -7,10 +7,10 @@ bool SurfaceObject::Load(const char * imagepath, GLuint shaderProgramID)
 
 	/// create vertices
 	Vertex Vertices[] = {
-		{{-1.0f,  1.0f, 0.0f, 1.0f  }, { 0, 0, 0, 1 }, { 0, 0 } },
-		{{ 1.0f,  1.0f, 0.0f, 1.0f  }, { 0, 0, 0, 1 }, { 1, 0 } },
-		{{ -1.0f, -1.0f, 0.0f, 1.0f }, { 0, 0, 0, 1 }, { 1, 1 } },
-		{{ 1.0f, -1.0f, 0.0f, 1.0f  }, { 0, 0, 0, 1 }, { 0, 1 } }
+		{{-1.0f,  1.0f, 0.0f, 1.0f  }, { 1, 0, 0, 1 }, { 0, 1 } },
+		{{ 1.0f,  1.0f, 0.0f, 1.0f  }, { 0, 1, 0, 1 }, { 1, 1 } },
+		{{ -1.0f, -1.0f, 0.0f, 1.0f }, { 0, 0, 1, 1 }, { 0, 0 } },
+		{{ 1.0f, -1.0f, 0.0f, 1.0f  }, { 1, 1, 1, 1 }, { 1, 0 } }
 	};
 
 	// Vertex buffer
@@ -31,7 +31,7 @@ bool SurfaceObject::Load(const char * imagepath, GLuint shaderProgramID)
 	// Set Vertex Array
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertices[0]), (GLvoid*)0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertices[0]), (GLvoid*)sizeof(Vertices[0].Position));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices[0]), (GLvoid*)sizeof(Vertices[0].Color));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices[0]), (GLvoid*)(sizeof(Vertices[0].Position) + sizeof(Vertices[0].Color)));
 	ExitOnGLError("ERROR: Could not set VAO attributes");
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -62,7 +62,7 @@ void SurfaceObject::Draw()
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
 	// draw
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	ExitOnGLError("ERROR: Could not draw the cube");
 
 	// unbind

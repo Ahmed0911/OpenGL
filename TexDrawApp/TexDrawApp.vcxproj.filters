@@ -41,5 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="SimpleShader.fragment.glsl" />
+    <None Include="SimpleShader.vertex.glsl" />
   </ItemGroup>
 </Project>
