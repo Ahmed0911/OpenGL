@@ -20,6 +20,9 @@ GLuint
 	BufferIds[3] = { 0 },
 	ShaderIds[3] = { 0 };
 
+GLuint textureID1;
+GLuint textureID2;
+
 Matrix
 	ProjectionMatrix,
 	ViewMatrix,
@@ -38,7 +41,7 @@ void TimerFunction(int);
 void IdleFunction(void);
 void CreateCube(void);
 void DestroyCube(void);
-void DrawCube(void);
+void DrawCube(float translationX, float translationY);
 
 
 
@@ -183,7 +186,8 @@ void RenderFunction(void)
 	FrameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	DrawCube();
+	for(int i=0; i!=100; i++)
+	DrawCube(0, 0);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -194,14 +198,14 @@ void CreateCube(void)
 {
 	const Vertex VERTICES[8] =
 	{
-		{ { -.5f, -.5f,  .5f, 1 },{ 0, 0, 1, 1 } },
-		{ { -.5f,  .5f,  .5f, 1 },{ 1, 0, 0, 1 } },
-		{ { .5f,  .5f,  .5f, 1 },{ 0, 1, 0, 1 } },
-		{ { .5f, -.5f,  .5f, 1 },{ 1, 1, 0, 1 } },
-		{ { -.5f, -.5f, -.5f, 1 },{ 1, 1, 1, 1 } },
-		{ { -.5f,  .5f, -.5f, 1 },{ 1, 0, 0, 1 } },
-		{ { .5f,  .5f, -.5f, 1 },{ 1, 0, 1, 1 } },
-		{ { .5f, -.5f, -.5f, 1 },{ 0, 0, 1, 1 } }
+		{ { -.5f, -.5f,  .5f, 1 },{ 0, 0, 1, 1 }, {0, 0} },
+		{ { -.5f,  .5f,  .5f, 1 },{ 1, 0, 0, 1 },{ 1, 0 } },
+		{ { .5f,  .5f,  .5f, 1 },{ 0, 1, 0, 1 },{ 0, 1 } },
+		{ { .5f, -.5f,  .5f, 1 },{ 1, 1, 0, 1 },{ 1, 1 } },
+		{ { -.5f, -.5f, -.5f, 1 },{ 1, 1, 1, 1 },{ 1, 1 } },
+		{ { -.5f,  .5f, -.5f, 1 },{ 1, 0, 0, 1 },{ 1, 0 } },
+		{ { .5f,  .5f, -.5f, 1 },{ 1, 0, 1, 1 },{ 1, 0 } },
+		{ { .5f, -.5f, -.5f, 1 },{ 0, 0, 1, 1 },{ 0, 0 } }
 	};
 
 	const GLuint INDICES[36] =
@@ -240,6 +244,7 @@ void CreateCube(void)
 	ExitOnGLError("ERROR: Could not bind the VAO");
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	ExitOnGLError("ERROR: Could not enable vertex attributes");
 
 	glBindBuffer(GL_ARRAY_BUFFER, BufferIds[1]);
@@ -248,6 +253,7 @@ void CreateCube(void)
 
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)sizeof(VERTICES[0].Position));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)sizeof(VERTICES[0].Color));
 	ExitOnGLError("ERROR: Could not set VAO attributes");
 
 	// index buffer
@@ -256,6 +262,10 @@ void CreateCube(void)
 	ExitOnGLError("ERROR: Could not bind the IBO to the VAO");
 
 	glBindVertexArray(0);
+	
+	// load texture
+	textureID1 = loadBMP_custom("sample_04.bmp");
+	textureID2 = loadBMP_custom("sample_06.bmp");
 }
 
 void DestroyCube(void)
@@ -272,7 +282,7 @@ void DestroyCube(void)
 	ExitOnGLError("ERROR: Could not destroy the buffer objects");
 }
 
-void DrawCube(void)
+void DrawCube(float translationX, float translationY)
 {
 	float CubeAngle;
 	clock_t Now = clock();
@@ -286,6 +296,7 @@ void DrawCube(void)
 
 	// set model matrix
 	ModelMatrix = IDENTITY_MATRIX;
+	TranslateMatrix(&ModelMatrix, translationX, translationY, 0);
 	RotateAboutY(&ModelMatrix, CubeAngle);
 	RotateAboutX(&ModelMatrix, CubeAngle);
 
@@ -300,6 +311,16 @@ void DrawCube(void)
 	// set vertex/index arrays
 	glBindVertexArray(BufferIds[0]);
 	ExitOnGLError("ERROR: Could not bind the VAO for drawing purposes");
+
+	// set texure 1
+	glActiveTexture(GL_TEXTURE0);	// Activate the texture unit first before binding texture
+	glBindTexture(GL_TEXTURE_2D, textureID1);
+	glUniform1i(glGetUniformLocation(ShaderIds[0], "myTextureSampler1"), 0);
+	
+	// set texure 2
+	glActiveTexture(GL_TEXTURE1);	// Activate the texture unit first before binding texture
+	glBindTexture(GL_TEXTURE_2D, textureID2);
+	glUniform1i(glGetUniformLocation(ShaderIds[0], "myTextureSampler2"), 1);
 
 	// draw
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLvoid*)0);

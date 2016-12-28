@@ -14,6 +14,7 @@ typedef struct Vertex
 {
 	float Position[4];
 	float Color[4];
+	float UV[2];
 } Vertex;
 
 typedef struct Matrix
@@ -43,3 +44,5 @@ Matrix CreateProjectionMatrix(
 
 void ExitOnGLError(const char* error_message);
 GLuint LoadShader(const char* filename, GLenum shader_type);
+
+GLuint loadBMP_custom(const char * imagepath);
