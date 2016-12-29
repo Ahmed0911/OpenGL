@@ -62,9 +62,13 @@ bool Window::Init(int argc, char* argv[])
 	CreateShaders();
 
 	// load objects
-	object1.Load("sample_04.bmp", ShaderID1);
-	object2.Load("colors.bmpx", ShaderID1);
-	object3.Load("Speed-Meter.bmpx", ShaderID1);
+	SurfaceObject obj1, obj2, obj3;
+	obj1.Load("sample_04.bmp", ShaderID1);
+	obj2.Load("colors.bmpx", ShaderID1);
+	obj3.Load("Speed-Meter.bmpx", ShaderID1);
+	Objects.push_back(obj1);
+	Objects.push_back(obj2);
+	Objects.push_back(obj3);
 
 	return false;
 }
@@ -87,7 +91,7 @@ void Window::CreateShaders()
 	glDeleteShader(vertexID);
 }
 
-double timer = 0;
+float timer = 0;
 void Window::Draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -97,13 +101,13 @@ void Window::Draw()
 	ExitOnGLError("ERROR: Could not use the shader program");
 
 	// draw objects
-	object1.Draw(1920/2, 1200/2, 0);
+	Objects[0].Draw(1920/2, 1200/2, 0);
 	for (int i = 0; i != 10; i++)
 	{
 		for(int j=0; j!=10; j++)
-		object3.Draw(i*300, j*300, timer);
+		Objects[1].Draw(i*300.0f, j*300.0f, timer);
 	}
-	timer += 0.02;
+	timer += 0.02f;
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -114,7 +118,10 @@ void Window::Draw()
 void Window::Destroy()
 {
 	// kill objects
-	object1.Unload();
+	for (int i = 0; i != Objects.size(); i++)
+	{
+		Objects[i].Unload();
+	}
 
 	// kill shader programs
 	glDeleteProgram(ShaderID1);

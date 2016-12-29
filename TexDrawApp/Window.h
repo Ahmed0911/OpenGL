@@ -1,5 +1,6 @@
 #pragma once
 #include "SurfaceObject.h"
+#include <vector>
 
 class Window
 {
@@ -15,13 +16,11 @@ private:
 	void CreateShaders();
 
 private:
-	SurfaceObject object1;
-	SurfaceObject object2;
-	SurfaceObject object3;
+	std::vector<SurfaceObject> Objects;
 
 	GLuint ShaderID1;
-	int CurrentWidth = 800;
-	int CurrentHeight = 600;
+	int CurrentWidth = 1920;
+	int CurrentHeight = 1200;
 	int WindowHandle = 0;
 	unsigned FrameCount = 0;
 };
