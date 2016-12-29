@@ -1,7 +1,11 @@
 #include "SurfaceObject.h"
 
-bool SurfaceObject::Load(const char * imagepath, GLuint shaderProgramID)
+bool SurfaceObject::Load(const char * imagepath, GLuint shaderProgramID, int screenWidth, int screenHeight)
 {
+	// Native Screen resolution, used for scaling/translation
+	ScreenHeight = screenHeight;
+	ScreenWidth = screenWidth;
+
 	// load texture
 	textureID = LoadBMP(imagepath, Width, Height);
 
@@ -42,16 +46,25 @@ bool SurfaceObject::Load(const char * imagepath, GLuint shaderProgramID)
 
 	shaderID = shaderProgramID; // copy shader ID
 
+	// get uniform location
+	TransMatrixUniformLocation = glGetUniformLocation(shaderID, "TransMatrix");
+
 	return true;
 }
 
-void SurfaceObject::Draw()
+void SurfaceObject::Draw(float x, float y, float rotationDeg)
 {
 	// set shaders
 	glUseProgram(shaderID);
 	ExitOnGLError("ERROR: Could not use the shader program");
 
-	//glUniformMatrix4fv(ModelMatrixUniformLocation, 1, GL_FALSE, ModelMatrix.m);	
+	// set Uniforms
+	Matrix transMatrix = IDENTITY_MATRIX;
+	RotateAboutZ(&transMatrix, DegreesToRadians(rotationDeg));
+	ScaleMatrix(&transMatrix, (float)Width / ScreenWidth, (float)Height / ScreenHeight, 1);
+	TranslateMatrix(&transMatrix, (2*x / ScreenWidth) - 1, 1 - (2*y / ScreenHeight), 0);
+	//TranslateMatrix(&transMatrix, ((2*x + Width) / ScreenWidth) - 1, 1 - ((2*y + Height ) / ScreenHeight), 0); // top-left corner as pivot for translation
+	glUniformMatrix4fv(TransMatrixUniformLocation, 1, GL_FALSE, transMatrix.m);
 	ExitOnGLError("ERROR: Could not set the shader uniforms");
 
 	// set vertex array

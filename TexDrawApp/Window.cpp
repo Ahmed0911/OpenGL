@@ -57,7 +57,7 @@ bool Window::Init(int argc, char* argv[])
 	CreateShaders();
 
 	// load objects
-	object1.Load("sample_04.bmp", ShaderID1);
+	object1.Load("sample_mini.bmp", ShaderID1);
 
 	return false;
 }
@@ -80,6 +80,7 @@ void Window::CreateShaders()
 	glDeleteShader(vertexID);
 }
 
+double timer = 0;
 void Window::Draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -89,7 +90,7 @@ void Window::Draw()
 	ExitOnGLError("ERROR: Could not use the shader program");
 
 	// draw objects
-	object1.Draw();
+	object1.Draw(1920/2, 0, timer+=0.02);
 
 
 	glutSwapBuffers();
