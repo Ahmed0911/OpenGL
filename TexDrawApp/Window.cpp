@@ -53,11 +53,18 @@ bool Window::Init(int argc, char* argv[])
 	glewInit();
 	glGetError();
 
+	// Enable blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+
 	// create shaders
 	CreateShaders();
 
 	// load objects
-	object1.Load("sample_mini.bmp", ShaderID1);
+	object1.Load("sample_04.bmp", ShaderID1);
+	object2.Load("colors.bmpx", ShaderID1);
+	object3.Load("Speed-Meter.bmpx", ShaderID1);
 
 	return false;
 }
@@ -90,8 +97,13 @@ void Window::Draw()
 	ExitOnGLError("ERROR: Could not use the shader program");
 
 	// draw objects
-	object1.Draw(1920/2, 0, timer+=0.02);
-
+	object1.Draw(1920/2, 1200/2, 0);
+	for (int i = 0; i != 10; i++)
+	{
+		for(int j=0; j!=10; j++)
+		object3.Draw(i*300, j*300, timer);
+	}
+	timer += 0.02;
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -124,9 +136,10 @@ void Window::TimerFunction(int Value)
 
 		sprintf(
 			TempString,
-			"%s: %d Frames Per Second @ %d x %d",
+			"%s: %d fps  [%0.3f ms] @ %d x %d",
 			WINDOW_TITLE_PREFIX,
 			FrameCount * 4,
+			1000.0/(FrameCount * 4),
 			CurrentWidth,
 			CurrentHeight
 		);

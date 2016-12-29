@@ -220,6 +220,11 @@ GLuint LoadBMP(const char * imagepath, unsigned int &width, unsigned int &height
 										 // Create a buffer
 	data = new unsigned char[imageSize];
 
+	// 32 bit BMP support
+	bool Is32BitBmp = false;
+	unsigned int sizeAs32Bit = width*height * 4;
+	if (imageSize == sizeAs32Bit) Is32BitBmp = true;
+
 	// Read the actual data from the file into the buffer
 	fread(data, 1, imageSize, file);
 
@@ -235,7 +240,8 @@ GLuint LoadBMP(const char * imagepath, unsigned int &width, unsigned int &height
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
 	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+	if(Is32BitBmp) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+	else glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

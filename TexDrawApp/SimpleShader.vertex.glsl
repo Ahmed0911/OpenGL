@@ -12,7 +12,6 @@ uniform mat4 TransMatrix;
 void main(void)
 {
 	gl_Position = TransMatrix * in_Position;
-	//gl_Position = in_Position;
 	ex_Color = in_Color;
 	UV = in_UV;
 }

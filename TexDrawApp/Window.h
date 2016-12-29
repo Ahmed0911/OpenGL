@@ -16,6 +16,9 @@ private:
 
 private:
 	SurfaceObject object1;
+	SurfaceObject object2;
+	SurfaceObject object3;
+
 	GLuint ShaderID1;
 	int CurrentWidth = 800;
 	int CurrentHeight = 600;

@@ -8,4 +8,5 @@ uniform sampler2D myTexture;
 void main(void)
 {
 	out_Color = texture( myTexture, UV );
+	//if (out_Color.a == 0) discard; // discard zero alpha, possible performance gain?
 }
