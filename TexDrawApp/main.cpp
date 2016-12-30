@@ -14,7 +14,7 @@ void IdleFunction(void)
 void TimerFunction(int Value)
 {
 	renderWindow.TimerFunction(Value);
-	glutTimerFunc(250, TimerFunction, 1);
+	glutTimerFunc(1000, TimerFunction, 1);
 }
 
 void Render(void)

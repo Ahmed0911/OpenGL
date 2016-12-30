@@ -63,7 +63,7 @@ bool Window::Init(int argc, char* argv[])
 
 	// load objects
 	SurfaceObject obj1, obj2, obj3;
-	obj1.Load("sample_04.bmp", ShaderID1);
+	obj1.Load("sample_04.bmpx", ShaderID1);
 	obj2.Load("colors.bmpx", ShaderID1);
 	obj3.Load("Speed-Meter.bmpx", ShaderID1);
 	Objects.push_back(obj1);
@@ -101,7 +101,7 @@ void Window::Draw()
 	ExitOnGLError("ERROR: Could not use the shader program");
 
 	// draw objects
-	for(int x=0; x!=1; x++) Objects[0].Draw(1920/2, 1200/2, 0);
+	for(int x=0; x!=10; x++) Objects[0].Draw(1920/2, 1200/2, 0);
 	for (int i = 0; i != 10; i++)
 	{
 		for(int j=0; j!=10; j++)
@@ -145,8 +145,8 @@ void Window::TimerFunction(int Value)
 			TempString,
 			"%s: %d fps  [%0.3f ms] @ %d x %d",
 			WINDOW_TITLE_PREFIX,
-			FrameCount * 4,
-			1000.0/(FrameCount * 4),
+			FrameCount,
+			1000.0/(FrameCount),
 			CurrentWidth,
 			CurrentHeight
 		);
