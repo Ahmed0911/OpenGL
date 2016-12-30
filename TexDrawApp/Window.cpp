@@ -101,13 +101,13 @@ void Window::Draw()
 	ExitOnGLError("ERROR: Could not use the shader program");
 
 	// draw objects
-	Objects[0].Draw(1920/2, 1200/2, 0);
+	for(int x=0; x!=1; x++) Objects[0].Draw(1920/2, 1200/2, 0);
 	for (int i = 0; i != 10; i++)
 	{
 		for(int j=0; j!=10; j++)
 		Objects[1].Draw(i*300.0f, j*300.0f, timer);
 	}
-	timer += 0.02f;
+	timer += 0.55555f;
 
 	glutSwapBuffers();
 	glutPostRedisplay();

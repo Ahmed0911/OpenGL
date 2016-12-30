@@ -170,7 +170,7 @@ GLuint LoadShader(const char* filename, GLenum shader_type)
 			free(glsl_source);
 		}
 		else
-			fprintf(stderr, "ERROR: Could not allocate %i bytes.\n", file_size);
+			fprintf(stderr, "ERROR: Could not allocate %ld bytes.\n", file_size);
 
 		fclose(file);
 	}
