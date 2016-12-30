@@ -4,6 +4,9 @@
 #include "Utils.h"
 #define WINDOW_TITLE_PREFIX "Chapter 4"
 
+// Open CV Stuff
+#include "opencv2/opencv.hpp"
+using namespace cv;
 
 int
 CurrentWidth = 800,
@@ -42,7 +45,7 @@ void IdleFunction(void);
 void CreateCube(void);
 void DestroyCube(void);
 void DrawCube(float translationX, float translationY);
-
+void InitCVStuff();
 
 
 int main(int argc, char* argv[])
@@ -96,6 +99,18 @@ void Initialize(int argc, char* argv[])
 	TranslateMatrix(&ViewMatrix, 0, 0, -2);
 
 	CreateCube();
+
+	InitCVStuff();
+}
+
+VideoCapture* capture;
+void InitCVStuff()
+{
+	capture = new VideoCapture(0);
+	if (!capture->isOpened()) // check if we succeeded
+		return;
+
+	//namedWindow("MyVideo", CV_WINDOW_AUTOSIZE); //create a window called "MyVideo"
 }
 
 void InitWindow(int argc, char* argv[])
@@ -183,10 +198,19 @@ void TimerFunction(int Value)
 
 void RenderFunction(void)
 {
+	Mat frame;
+	capture->read(frame); // get a new frame from camera
+	//imshow("Video", frame);
+	glActiveTexture(GL_TEXTURE0);	// Activate the texture unit first before binding texture
+	glBindTexture(GL_TEXTURE_2D, textureID1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.cols, frame.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, frame.ptr());
+	// NOTE: Try glTextureSubImage2D() for faster update, will not create texture, only update
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	FrameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for(int i=0; i!=100; i++)
+	//for(int i=0; i!=100; i++)
 	DrawCube(0, 0);
 
 	glutSwapBuffers();
@@ -199,13 +223,13 @@ void CreateCube(void)
 	const Vertex VERTICES[8] =
 	{
 		{ { -.5f, -.5f,  .5f, 1 },{ 0, 0, 1, 1 }, {0, 0} },
-		{ { -.5f,  .5f,  .5f, 1 },{ 1, 0, 0, 1 },{ 1, 0 } },
-		{ { .5f,  .5f,  .5f, 1 },{ 0, 1, 0, 1 },{ 0, 1 } },
-		{ { .5f, -.5f,  .5f, 1 },{ 1, 1, 0, 1 },{ 1, 1 } },
-		{ { -.5f, -.5f, -.5f, 1 },{ 1, 1, 1, 1 },{ 1, 1 } },
-		{ { -.5f,  .5f, -.5f, 1 },{ 1, 0, 0, 1 },{ 1, 0 } },
-		{ { .5f,  .5f, -.5f, 1 },{ 1, 0, 1, 1 },{ 1, 0 } },
-		{ { .5f, -.5f, -.5f, 1 },{ 0, 0, 1, 1 },{ 0, 0 } }
+		{ { -.5f,  .5f,  .5f, 1 },{ 1, 0, 0, 1 },{ 0, 1 } },
+		{ { .5f,  .5f,  .5f, 1 },{ 0, 1, 0, 1 },{ 1, 1 } },
+		{ { .5f, -.5f,  .5f, 1 },{ 1, 1, 0, 1 },{ 1, 0 } },
+		{ { -.5f, -.5f, -.5f, 1 },{ 1, 1, 1, 1 },{ 0, 0 } },
+		{ { -.5f,  .5f, -.5f, 1 },{ 1, 0, 0, 1 },{ 0, 1 } },
+		{ { .5f,  .5f, -.5f, 1 },{ 1, 0, 1, 1 },{ 1, 1 } },
+		{ { .5f, -.5f, -.5f, 1 },{ 0, 0, 1, 1 },{ 1, 0 } }
 	};
 
 	const GLuint INDICES[36] =
@@ -253,7 +277,7 @@ void CreateCube(void)
 
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)sizeof(VERTICES[0].Position));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)sizeof(VERTICES[0].Color));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VERTICES[0]), (GLvoid*)(sizeof(VERTICES[0].Position)+sizeof(VERTICES[0].Color)));
 	ExitOnGLError("ERROR: Could not set VAO attributes");
 
 	// index buffer
@@ -315,8 +339,8 @@ void DrawCube(float translationX, float translationY)
 	// set texure 1
 	glActiveTexture(GL_TEXTURE0);	// Activate the texture unit first before binding texture
 	glBindTexture(GL_TEXTURE_2D, textureID1);
-	glUniform1i(glGetUniformLocation(ShaderIds[0], "myTextureSampler1"), 0);
-	
+	glUniform1i(glGetUniformLocation(ShaderIds[0], "myTextureSampler1"), 0);	
+
 	// set texure 2
 	glActiveTexture(GL_TEXTURE1);	// Activate the texture unit first before binding texture
 	glBindTexture(GL_TEXTURE_2D, textureID2);

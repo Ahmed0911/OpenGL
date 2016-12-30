@@ -12,5 +12,6 @@ void main(void)
 {
   //out_Color = ex_Color;
   //out_Color = vec4(UV.x, UV.y, 0, 1.0); //Reverses the order.
-  out_Color = mix( texture( myTextureSampler1, UV ), texture( myTextureSampler2, UV ), 0.6);
+  //out_Color = mix( texture( myTextureSampler1, UV ), texture( myTextureSampler2, UV ), 0.6);
+  out_Color = texture( myTextureSampler1, UV );
 }
